@@ -1,0 +1,125 @@
+Pseudo Code for BTL KTMT
+
+1. Mở file input để đọc
+	1.1. Định nghĩa đường dẫn đến file input (`input_matrix.txt`)
+	1.2. Sử dụng syscall để mở file
+    		1.2.1. Đặt syscall code cho "open file" vào thanh ghi v0 (giá trị 13)
+    		1.2.2. Đặt đường dẫn file vào thanh ghi a0
+    		1.2.3. Đặt chế độ mở file (đọc) vào thanh ghi a1 (giá trị 0)
+    		1.2.4. Đặt quyền truy cập vào thanh ghi a2 (giá trị 0)
+    		1.2.5. Thực hiện syscall
+    		1.2.6. Kiểm tra kết quả mở file
+        		1.2.6.1. Nếu mở file thất bại (giá trị trả về < 0), nhảy đến hàm xử lý lỗi
+        		1.2.6.2. Nếu mở file thành công, lưu file descriptor vào thanh ghi tạm (ví dụ $s0)
+
+	1.3. Kết thúc bước mở file
+
+
+2. Đọc và phân tích dòng đầu tiên
+	2.1. Định nghĩa bộ đệm (buffer) để lưu dòng đầu tiên đọc từ file
+	2.2. Sử dụng syscall để đọc dòng đầu tiên từ file input
+   		2.2.1. Đặt syscall code cho "read file" vào thanh ghi v0 (giá trị 14)
+    		2.2.2. Đặt file descriptor (lưu trong thanh ghi $s0) vào thanh ghi a0
+    		2.2.3. Đặt địa chỉ bộ đệm vào thanh ghi a1
+    		2.2.4. Đặt kích thước bộ đệm vào thanh ghi a2 (số byte cần đọc)
+    		2.2.5. Thực hiện syscall để đọc dòng đầu tiên
+
+	2.3. Phân tích các giá trị từ bộ đệm
+    		2.3.1. Tách các giá trị N, M, p, s từ bộ đệm
+    		2.3.2. Lưu các giá trị này vào các thanh ghi tương ứng ($t0, $t1, $t2, $t3)
+
+	2.4. Kết thúc bước đọc và phân tích dòng đầu tiên
+
+3. Đọc ma trận ảnh (image) và lưu vào mảng
+	3.1. Định nghĩa các mảng để lưu trữ ma trận ảnh (image matrix)
+	3.2. Sử dụng syscall để đọc dòng thứ hai từ file input
+    		3.2.1. Đặt syscall code cho "read file" vào thanh ghi v0 (giá trị 14)
+    		3.2.2. Đặt file descriptor (lưu trong thanh ghi $s0) vào thanh ghi a0
+    		3.2.3. Đặt địa chỉ bộ đệm vào thanh ghi a1
+    		3.2.4. Đặt kích thước bộ đệm vào thanh ghi a2 (số byte cần đọc)
+    		3.2.5. Thực hiện syscall để đọc dòng thứ hai
+
+	3.3. Phân tích các giá trị từ bộ đệm
+		3.3.1. Khởi tạo con trỏ để duyệt qua bộ đệm
+		3.3.2. Sử dụng vòng lặp để đọc và phân tích từng giá trị số
+			3.3.2.1. Nếu gặp dấu cách (space), chuyển sang đọc giá trị tiếp theo
+			3.3.2.2. Nếu gặp dấu trừ (negative sign), lưu ký hiệu âm và đọc tiếp giá trị
+			3.3.2.3. Nếu gặp dấu chấm (decimal point), xử lý phần thập phân của số
+		3.3.3. Chuyển đổi các chuỗi ký tự thành giá trị số (số nguyên hoặc số thực)
+		3.3.4. Lưu giá trị số vào mảng ma trận ảnh
+
+	3.4. Kết thúc bước đọc và phân tích ma trận ảnh
+
+4. Đọc ma trận kernel và lưu vào mảng
+	4.1. Định nghĩa các mảng để lưu trữ ma trận kernel (kernel matrix)
+	4.2. Sử dụng syscall để đọc dòng thứ ba từ file input
+		4.2.1. Đặt syscall code cho "read file" vào thanh ghi v0 (giá trị 14)
+		4.2.2. Đặt file descriptor (lưu trong thanh ghi $s0) vào thanh ghi a0
+		4.2.3. Đặt địa chỉ bộ đệm vào thanh ghi a1
+		4.2.4. Đặt kích thước bộ đệm vào thanh ghi a2 (số byte cần đọc)
+		4.2.5. Thực hiện syscall để đọc dòng thứ ba
+
+	4.3. Phân tích các giá trị từ bộ đệm
+		4.3.1. Khởi tạo con trỏ để duyệt qua bộ đệm
+		4.3.2. Sử dụng vòng lặp để đọc và phân tích từng giá trị số
+			4.3.2.1. Nếu gặp dấu cách (space), chuyển sang đọc giá trị tiếp theo
+			4.3.2.2. Nếu gặp dấu trừ (negative sign), lưu ký hiệu âm và đọc tiếp giá trị
+			4.3.2.3. Nếu gặp dấu chấm (decimal point), xử lý phần thập phân của số
+		4.3.3. Chuyển đổi các chuỗi ký tự thành giá trị số (số nguyên hoặc số thực)
+		4.3.4. Lưu giá trị số vào mảng ma trận kernel
+
+	4.4. Kết thúc bước đọc và phân tích ma trận kernel
+
+5. Thêm padding cho ma trận ảnh
+	5.1. Tính toán kích thước mới của ma trận ảnh sau khi thêm padding
+		5.1.1. Kích thước mới của ma trận ảnh = (N + 2 * p) x (N + 2 * p)
+		5.1.2. Khởi tạo một ma trận mới có kích thước tính toán ở trên, với tất cả giá trị ban đầu là 0
+
+	5.2. Sao chép các giá trị từ ma trận ảnh gốc vào vị trí thích hợp trong ma trận mới
+		5.2.1. Bắt đầu từ vị trí (p, p) trong ma trận mới
+		5.2.2. Sao chép từng giá trị từ ma trận ảnh gốc vào vị trí tương ứng trong ma trận mới
+
+	5.3. Kết thúc bước thêm padding cho ma trận ảnh
+
+6. Tính toán ma trận kết quả thông qua phép tích chập
+	6.1. Khởi tạo ma trận kết quả với kích thước (output_size x output_size)
+		6.1.1. output_size = ((N + 2 * p - M) / s) + 1
+
+	6.2. Duyệt qua các phần tử của ma trận ảnh đã được thêm padding để thực hiện phép tích chập
+		6.2.1. Sử dụng hai vòng lặp lồng nhau để di chuyển ma trận kernel qua ma trận ảnh (theo chiều hàng và cột)
+		6.2.2. Tại mỗi vị trí (i, j) của ma trận ảnh, thực hiện phép tích chập:
+			6.2.2.1. Khởi tạo tổng tích lũy = 0
+			6.2.2.2. Sử dụng hai vòng lặp lồng nhau để duyệt qua các phần tử của ma trận kernel
+			6.2.2.3. Tính tích phần tử tương ứng giữa ma trận kernel và ma trận ảnh
+			6.2.2.4. Cộng tích phần tử vào tổng tích lũy
+		6.2.3. Lưu giá trị tổng tích lũy vào ma trận kết quả tại vị trí tương ứng
+
+	6.3. Kết thúc bước tính toán ma trận kết quả
+
+7. Mở file output để ghi
+	7.1. Định nghĩa đường dẫn đến file output (`output_matrix.txt`)
+	7.2. Sử dụng syscall để mở file output
+		7.2.1. Đặt syscall code cho "open file" vào thanh ghi v0 (giá trị 13)
+		7.2.2. Đặt đường dẫn file vào thanh ghi a0
+		7.2.3. Đặt chế độ mở file (ghi) vào thanh ghi a1 (giá trị 1)
+		7.2.4. Đặt quyền truy cập vào thanh ghi a2 (giá trị 0)
+		7.2.5. Thực hiện syscall
+		7.2.6. Kiểm tra kết quả mở file
+			7.2.6.1. Nếu mở file thất bại (giá trị trả về < 0), nhảy đến hàm xử lý lỗi
+			7.2.6.2. Nếu mở file thành công, lưu file descriptor vào thanh ghi tạm (ví dụ $s1)
+
+	7.3. Kết thúc bước mở file
+
+8. Ghi ma trận kết quả vào file
+	8.1. Mở file output để ghi (đã thực hiện ở bước 7)
+	8.2. Định nghĩa con trỏ để duyệt qua ma trận kết quả
+	8.3. Ghi từng giá trị trong ma trận kết quả vào file
+		8.3.1. Sử dụng vòng lặp để duyệt qua các phần tử của ma trận kết quả
+		8.3.2. Tại mỗi phần tử:
+			8.3.2.1. Chuyển đổi giá trị số thành chuỗi ký tự với 4 chữ số thập phân
+			8.3.2.2. Ghi chuỗi ký tự vào file
+			8.3.2.3. Ghi dấu cách (space) sau mỗi giá trị
+	8.4. Kết thúc vòng lặp sau khi ghi hết các phần tử
+	8.5. Đóng file output
+	8.6. Kết thúc chương trình
+
